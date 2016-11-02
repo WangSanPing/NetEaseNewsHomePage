@@ -119,6 +119,22 @@
 
     WXNewsController *vc = self.childViewControllers[index];
     
+    // 当前标题对应的索引
+    UILabel *label = self.titleScrollView.subviews[index];
+    CGFloat needOffset = label.center.x - self.titleScrollView.frame.size.width * 0.5;
+    
+    // 判断左边界
+    if(needOffset < 0) needOffset = 0;
+    
+    // 最大contentOffset ↓↓↓↓↓↓↓↓
+    CGFloat maxOffset = self.titleScrollView.contentSize.width - self.titleScrollView.frame.size.width;
+    // 判断右边界
+    if(needOffset > maxOffset) needOffset = maxOffset;
+    
+    CGPoint titleOffset = self.titleScrollView.contentOffset;
+    titleOffset.x = needOffset;
+    [self.titleScrollView setContentOffset:titleOffset animated:YES];
+    
     // 如果已经显示过了就返回
     if([vc isViewLoaded])
         return;
