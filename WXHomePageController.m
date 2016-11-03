@@ -8,6 +8,7 @@
 
 #import "WXHomePageController.h"
 #import "WXNewsController.h"
+#import "WXHomeLabel.h"
 
 @interface WXHomePageController () <UIScrollViewDelegate>
 @property (weak, nonatomic) IBOutlet UIScrollView *titleScrollView;
@@ -27,6 +28,7 @@
     [self addLabel];
     
     [self scrollViewDidEndScrollingAnimation:self.contentScrollView];
+    
 }
 
 /**
@@ -69,18 +71,20 @@
     CGFloat labelH = self.titleScrollView.frame.size.height;
     
     for (NSInteger i = 0; i < count; i++) {
-        UILabel *label = [[UILabel alloc] init];
+        WXHomeLabel *label = [[WXHomeLabel alloc] init];
         label.text = self.childViewControllers[i].title;
-        label.textColor = [UIColor blackColor];
         label.frame = CGRectMake(i * labelW, labelY, labelW, labelH);
-        label.backgroundColor = [UIColor colorWithRed:arc4random_uniform(100) / 100.0 green:arc4random_uniform(100) / 100.0 blue:arc4random_uniform(100) / 100.0 alpha:1];
-        label.textAlignment = NSTextAlignmentCenter;
         
         // 添加点击事件 (触摸手势)
         [label addGestureRecognizer:[[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(labelClick:)]];
         // 使该控件可以和用户交互
         label.userInteractionEnabled = YES;
         label.tag = i;
+        
+        if(i == 0){
+            label.scale = 1.0;
+        }
+        
         [self.titleScrollView addSubview:label];
     }
     
@@ -90,7 +94,6 @@
 
 /**
  标题点击事件
- 
  @param tap 标题
  */
 - (void)labelClick:(UITapGestureRecognizer *)tap{
@@ -120,7 +123,7 @@
     WXNewsController *vc = self.childViewControllers[index];
     
     // 当前标题对应的索引
-    UILabel *label = self.titleScrollView.subviews[index];
+    WXHomeLabel *label = self.titleScrollView.subviews[index];
     CGFloat needOffset = label.center.x - self.titleScrollView.frame.size.width * 0.5;
     
     // 判断左边界
@@ -134,7 +137,9 @@
     CGPoint titleOffset = self.titleScrollView.contentOffset;
     titleOffset.x = needOffset;
     [self.titleScrollView setContentOffset:titleOffset animated:YES];
-    
+//    
+//    NSLog(@"%f",scrollView.contentOffset.x);
+
     // 如果已经显示过了就返回
     if([vc isViewLoaded])
         return;
@@ -155,4 +160,57 @@
     [self scrollViewDidEndScrollingAnimation:scrollView];
 }
 
+- (void)scrollViewDidScroll:(UIScrollView *)scrollView{
+    
+    CGFloat scale = scrollView.contentOffset.x / scrollView.frame.size.width;
+    
+    if(scale < 0 || scale > self.titleScrollView.subviews.count - 1)
+        return;
+    
+    // 获得需要操作的左边的label
+    NSInteger leftIndex = scale;
+    WXHomeLabel *leftLabel = self.titleScrollView.subviews[leftIndex];
+    
+    // 获得需要操作的右边的label
+    NSInteger rightIndex = leftIndex + 1;
+    WXHomeLabel *rightLabel = rightIndex == self.titleScrollView.subviews.count ? nil : self.titleScrollView.subviews[rightIndex];
+    
+    // 右边比例
+    CGFloat rightScale = scale - leftIndex;
+    // 左边比例
+    CGFloat leftScale = 1 - rightScale;
+    
+    // 设置label的比例
+    leftLabel.scale = leftScale;
+    rightLabel.scale = rightScale;
+}
+
+
 @end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
